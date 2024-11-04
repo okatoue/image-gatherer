@@ -34,7 +34,7 @@ func set_oauth(input string) *oauth2.Config {
 	} else {
 		CLIENT_ID := "FACEBOOK_CLIENT_ID"
 		CLIENTSECRET := "FACEBOOK_CLIENT_SECRET"
-		URL = "https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=10"
+		URL = "https://graph.facebook.com/me/photos?type=uploaded&fields=id,name,images"
 
 		return &oauth2.Config{
 			ClientID:     os.Getenv(CLIENT_ID),
