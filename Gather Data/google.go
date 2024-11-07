@@ -11,52 +11,24 @@ import (
 
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/google"
 )
 
 var oauthConfig *oauth2.Config
-var URL string
-
-func set_oauth(input string) *oauth2.Config {
-	if input == "google" {
-		CLIENT_ID := "GOOGLE_CLIENT_ID"
-		CLIENTSECRET := "GOOGLE_CLIENT_SECRET"
-		URL = "https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=10"
-
-		return &oauth2.Config{
-			ClientID:     os.Getenv(CLIENT_ID),
-			ClientSecret: os.Getenv(CLIENTSECRET),
-			Endpoint:     google.Endpoint,
-			Scopes:       []string{"https://www.googleapis.com/auth/photoslibrary.readonly"},
-			RedirectURL:  "http://localhost:8080/callback",
-		}
-	} else {
-		CLIENT_ID := "FACEBOOK_CLIENT_ID"
-		CLIENTSECRET := "FACEBOOK_CLIENT_SECRET"
-		URL = "https://graph.facebook.com/me/photos?type=uploaded&fields=id,name,images"
-
-		return &oauth2.Config{
-			ClientID:     os.Getenv(CLIENT_ID),
-			ClientSecret: os.Getenv(CLIENTSECRET),
-			Endpoint:     facebook.Endpoint,
-			Scopes:       []string{"user_photos", "user_videos"},
-			RedirectURL:  "http://localhost:8080/callback",
-		}
-	}
-}
 
 func main() {
-	var input string
-	fmt.Print("Enter the provider (google/facebook): ")
-	fmt.Scanln(&input)
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
 
-	oauthConfig = set_oauth(input)
+	oauthConfig = &oauth2.Config{
+		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		Endpoint:     google.Endpoint,
+		Scopes:       []string{"https://www.googleapis.com/auth/photoslibrary.readonly"},
+		RedirectURL:  "http://localhost:8080/callback",
+	}
 
 	authURL := oauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Visit the URL for the auth dialog: %v\n", authURL)
@@ -69,6 +41,7 @@ func main() {
 }
 
 func callback(w http.ResponseWriter, r *http.Request) {
+	var URL = "https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=10"
 	code := r.URL.Query().Get("code")
 
 	if code == "" {
